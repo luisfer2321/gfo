@@ -34,7 +34,7 @@ def estado_resultados(p: dict) -> dict:
 
     Utilidad bruta = Ventas − Costo de ventas
     UAII = Utilidad bruta − (Gastos de venta + Gastos de administración + Depreciación)
-    UAI = UAII − Gastos por intereses
+    UAI = UAII − Gastos por intereses + Otros ingresos (gastos) netos
     Impuesto = UAI × tasa (solo si UAI > 0)
     Utilidad neta = UAI − Impuesto
     """
@@ -42,7 +42,8 @@ def estado_resultados(p: dict) -> dict:
     utilidad_bruta = ventas - p["costo_ventas"]
     gastos_operacion = p["gastos_venta"] + p["gastos_admin"] + p["depreciacion"]
     uaii = utilidad_bruta - gastos_operacion
-    uai = uaii - p["intereses"]
+    otros = p.get("otros_ingresos", 0.0)
+    uai = uaii - p["intereses"] + otros
     impuestos = max(uai, 0) * p["tasa_impuesto"]
     utilidad_neta = uai - impuestos
     return {
@@ -55,6 +56,7 @@ def estado_resultados(p: dict) -> dict:
         "gastos_operacion": gastos_operacion,
         "uaii": uaii,
         "intereses": p["intereses"],
+        "otros_ingresos": otros,
         "uai": uai,
         "impuestos": impuestos,
         "utilidad_neta": utilidad_neta,
@@ -481,7 +483,7 @@ def presupuesto_maestro(s: dict, trimestres: pd.DataFrame, balance: dict) -> dic
     # 7. Estado de resultados proforma (anual)
     p_res = {
         "ventas": sum(ventas), "costo_ventas": sum(cbv), "gastos_venta": sum(g_var),
-        "gastos_admin": sum(g_fijos), "depreciacion": sum(dep), "intereses": s["intereses_anuales"],
+        "gastos_admin": sum(g_fijos), "depreciacion": sum(dep), "intereses": s["intereses_anuales"], "otros_ingresos": 0.0,
         "tasa_impuesto": s["tasa_impuesto"],
     }
     er = estado_resultados(p_res)

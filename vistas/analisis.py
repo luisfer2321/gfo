@@ -30,7 +30,7 @@ LINEAS_BG = ([(k, n, "") for k, n, _ in datos.CUENTAS_BALANCE[:4]] + [("activo_c
                                                                     ("pasivo_patrimonio", "TOTAL PASIVO + PATRIMONIO", "total")])
 LINEAS_ER = [(k, datos.NOMBRES[k], e) for k, e in [
     ("ventas", ""), ("costo_ventas", ""), ("utilidad_bruta", "sub"), ("gastos_venta", ""), ("gastos_admin", ""),
-    ("depreciacion", ""), ("uaii", "sub"), ("intereses", ""), ("uai", "sub"), ("impuestos", ""), ("utilidad_neta", "total")]]
+    ("depreciacion", ""), ("uaii", "sub"), ("intereses", ""), ("otros_ingresos", ""), ("uai", "sub"), ("impuestos", ""), ("utilidad_neta", "total")]]
 
 t_h, t_v, t_r, t_d = st.tabs([":material/compare_arrows: Análisis horizontal", ":material/stacked_bar_chart: Análisis vertical",
                               ":material/speed: Razones financieras", ":material/account_tree: Sistema DuPont"])
@@ -105,6 +105,7 @@ with t_v:
         pasos = [("Ventas", d["ventas"], "absolute"), ("Costo de ventas", -d["costo_ventas"], "relative"),
                  ("Gastos de venta", -d["gastos_venta"], "relative"), ("Gastos admin.", -d["gastos_admin"], "relative"),
                  ("Depreciación", -d["depreciacion"], "relative"), ("Intereses", -d["intereses"], "relative"),
+                 ("Otros ingresos/gastos", d["otros_ingresos"], "relative"),
                  ("Impuestos", -d["impuestos"], "relative"), ("Utilidad neta", d["utilidad_neta"], "total")]
         fig = ui.figura(f"De las ventas a la utilidad neta · {actual}", 380, leyenda=False)
         fig.add_trace(go.Waterfall(

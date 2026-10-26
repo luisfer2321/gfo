@@ -94,7 +94,12 @@ REGLAS_ER = [
     ("gastos_venta", r"gastos? (de|en) (ventas?|comercializacion|distribucion|mercadeo|venta)|gastos? comerciales?"),
     ("gastos_admin", r"gastos? (de )?(administracion|administrativos?|generales?)|otros gastos (de operacion|operativos?|operacionales?)"),
     ("depreciacion", r"depreciacion|amortizacion"),
+    ("otros_ingresos", r"^otros ingresos|^ingresos? (financieros|no operacionales|no operativos|extraordinarios|diversos|varios)"
+                       r"|intereses (ganados|cobrados)|ingresos? por intereses|productos financieros|ganancia (en|por) venta"),
+    ("otros_gastos", r"^otros gastos|^gastos? (no operacionales|no operativos|extraordinarios|diversos|varios)|perdida (en|por) venta"),
     ("intereses", r"intereses|gastos? financieros?|costos? financieros?|cargos? financieros?"),
+    ("tasa", r"^tasa|tasa (de|del) (impuesto|ir)|porcentaje (de|del) (impuesto|ir)"),
+    ("dividendos", r"dividendos?"),
     ("impuesto", r"impuesto|^ir\b|^i r\b"),
     ("ventas_netas", r"^(ventas|ingresos)( por ventas)? net[oa]s$|^ingresos (netos|totales)$"),
     ("ventas", r"^ventas\b|^ingresos (por|de) (ventas?|actividades ordinarias|operacion)|^ingresos operac|^ventas brutas|^ingresos$"),
@@ -129,6 +134,8 @@ def _seccion(n: str) -> str | None:
 
 def _clasificar(n: str, bloque: str, seccion: str | None) -> tuple[str, str | None]:
     """Devuelve (tipo, clave) con tipo en 'cuenta', 'total', 'otros' o 'ignorada'."""
+    if re.search(r"^(control|cuadre|verificacion|comprobacion|diferencia)\b", n):
+        return "total", None
     for clave, patron in TOTALES:
         if re.search(patron, n):
             # "Utilidad del ejercicio" dentro del patrimonio es una cuenta, no un total
@@ -172,6 +179,12 @@ def _nombre_periodo(v) -> str:
     s = str(v).strip()
     anios = re.findall(r"\b(?:19|20)\d{2}\b", s)
     return anios[0] if len(set(anios)) == 1 else s
+
+
+def _anio_unico(texto: str) -> str | None:
+    """Devuelve el año si el texto menciona exactamente uno (p. ej. "Balance General 2025")."""
+    anios = set(re.findall(r"\b(?:19|20)\d{2}\b", str(texto)))
+    return anios.pop() if len(anios) == 1 else None
 
 
 def _es_columna_excluida(encabezado: str) -> bool:
@@ -230,6 +243,21 @@ def leer_hoja(df: pd.DataFrame, hoja: str) -> list[dict]:
                        if any(p is not None and j > p and a_numero(c[j]) is not None for _, c, p in filas)]
         columnas = {j: f"Período {k + 1}" for k, j in enumerate(con_numeros)}
 
+    # Si las columnas no indican el período ("Monto (C$)", "Saldo"...), se toma el año
+    # del nombre de la hoja o del título ("Balance General al 31 de diciembre de 2025").
+    if not any(re.search(r"\b(?:19|20)\d{2}\b", c) for c in columnas.values()):
+        anio = _anio_unico(hoja)
+        if anio is None:
+            limite = encabezado[0] if encabezado else None
+            titulos = []
+            for idx, celdas, pos in filas:
+                if idx == limite:
+                    break
+                titulos += [str(c) for c in celdas if isinstance(c, str)]
+            anio = _anio_unico(" ".join(titulos))
+        if anio and len(columnas) == 1:
+            columnas = {j: anio for j in columnas}
+
     salida = []
     for idx, celdas, pos in filas:
         if pos is None or (encabezado and idx == encabezado[0]):
@@ -276,6 +304,7 @@ def interpretar(filas: list[dict]) -> dict:
     acumulado: dict[str, dict] = {}
     totales_archivo: dict[str, dict] = {}
     detalle, no_reconocidas = [], []
+    con_er, con_bg = set(), set()
     bloque, seccion, hoja_actual = None, None, None
 
     for f in filas:
@@ -317,16 +346,25 @@ def interpretar(filas: list[dict]) -> dict:
             continue
         for p, v in f["valores"].items():
             a = acumulado.setdefault(p, {})
-            if clave in GASTOS or clave == "devoluciones":
+            if clave in GASTOS or clave in ("devoluciones", "dividendos"):
                 v = abs(v)
             if clave == "dep_acumulada":
                 a["ppe"] = a.get("ppe", 0) - abs(v)
+            elif clave == "otros_ingresos":
+                a["otros_ingresos"] = a.get("otros_ingresos", 0) + abs(v)
+            elif clave == "otros_gastos":
+                a["otros_ingresos"] = a.get("otros_ingresos", 0) - abs(v)
+            elif clave == "tasa":
+                a["tasa"] = v * 100 if abs(v) <= 1 else v
             else:
                 a[clave] = a.get(clave, 0) + v
-        destino = {"dep_acumulada": "ppe", "devoluciones": "ventas", "ventas_netas": "ventas",
-                   "impuesto": "tasa_impuesto"}.get(clave, clave)
+        destino = {"dep_acumulada": "ppe", "devoluciones": "ventas", "ventas_netas": "ventas", "tasa": "tasa_impuesto",
+                   "impuesto": "tasa_impuesto", "otros_gastos": "otros_ingresos"}.get(clave, clave)
+        for p in f["valores"]:
+            (con_er if bloque == "er" else con_bg).add(p)
         nombre = datos.NOMBRES.get(destino, destino)
-        nota = {"dep_acumulada": " (se resta)", "devoluciones": " (se resta)", "impuesto": " (para calcular la tasa)"}.get(clave, "")
+        nota = {"dep_acumulada": " (se resta)", "devoluciones": " (se resta)", "otros_gastos": " (se resta)",
+                "impuesto": " (para calcular la tasa)"}.get(clave, "")
         if tipo == "otros":
             nota = " (cuenta no identificada; se agrupa por su sección)"
         detalle.append({"Hoja": f["hoja"], "Cuenta del archivo": f["cuenta"], "Se asignó a": nombre + nota})
@@ -342,17 +380,21 @@ def interpretar(filas: list[dict]) -> dict:
         else:
             e["ventas"] = a.get("ventas", 0.0) - a.get("devoluciones", 0.0)
         er = calc.estado_resultados({**e, "tasa_impuesto": 0})
-        if a.get("impuesto") and er["uai"] > 0:
+        if "tasa" in a:
+            tasa = round(a["tasa"], 2)
+        elif a.get("impuesto") and er["uai"] > 0:
             tasa = round(a["impuesto"] / er["uai"] * 100, 2)
         else:
             tasa = 30.0
             if er["uai"] > 0:
                 avisos.append(f"{p}: no se encontró el impuesto sobre la renta; se usó una tasa de 30 %.")
-        e.update({"tasa_impuesto": tasa, "acciones": 0.0, "precio_accion": 0.0, "dividendos": 0.0})
+        e.update({"tasa_impuesto": tasa, "acciones": 0.0, "precio_accion": 0.0, "dividendos": float(a.get("dividendos", 0.0))})
         estados[p] = e
 
     # Dividendos implícitos: UR anterior + Utilidad neta − UR actual
     for anterior, actual in zip(periodos, periodos[1:]):
+        if "dividendos" in acumulado.get(actual, {}) or actual not in con_er:
+            continue
         un = calc.estado_resultados({**estados[actual], "tasa_impuesto": estados[actual]["tasa_impuesto"] / 100})["utilidad_neta"]
         div = estados[anterior]["utilidades_retenidas"] + un - estados[actual]["utilidades_retenidas"]
         if div > 0.5:
@@ -372,10 +414,13 @@ def interpretar(filas: list[dict]) -> dict:
                               "Calculado por el sistema": calculado[clave], "Coincide": "✓" if ok else "✕"})
         if abs(calculado["diferencia"]) > 0.5:
             avisos.append(f"{p}: el balance no cuadra (Activo − Pasivo − Patrimonio = {calculado['diferencia']:,.2f}).")
-        if not calculado["ventas"]:
+        if p not in con_er:
+            avisos.append(f"{p}: solo tiene Balance General. Se usa en el análisis del balance, las variaciones y el "
+                          "flujo de efectivo; las razones que necesitan el Estado de Resultados saldrán N/D en ese período.")
+        elif not calculado["ventas"]:
             avisos.append(f"{p}: no se encontraron ventas; revise el Estado de Resultados.")
-        if not calculado["activo_total"]:
-            avisos.append(f"{p}: no se encontraron cuentas de activo; revise el Balance General.")
+        if p not in con_bg:
+            avisos.append(f"{p}: solo tiene Estado de Resultados; agregue también su Balance General.")
 
     return {"periodos": periodos, "estados": estados, "detalle": pd.DataFrame(detalle),
             "no_reconocidas": pd.DataFrame(no_reconocidas), "verificaciones": pd.DataFrame(verif), "avisos": avisos}

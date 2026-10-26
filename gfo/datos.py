@@ -38,6 +38,7 @@ CUENTAS_RESULTADOS = [
     ("gastos_admin", "Gastos de administración"),
     ("depreciacion", "Depreciación"),
     ("intereses", "Gastos por intereses"),
+    ("otros_ingresos", "Otros ingresos (gastos) netos"),
 ]
 
 DATOS_ADICIONALES = [
@@ -71,7 +72,7 @@ ESTADOS_EJEMPLO = {
         "cuentas_pagar": 700_000, "prestamos_cp": 400_000, "otros_pc": 200_000, "prestamos_lp": 1_700_000,
         "capital": 2_000_000, "utilidades_retenidas": 1_000_000,
         "ventas": 8_000_000, "costo_ventas": 5_200_000, "gastos_venta": 900_000, "gastos_admin": 700_000,
-        "depreciacion": 300_000, "intereses": 200_000,
+        "depreciacion": 300_000, "intereses": 200_000, "otros_ingresos": 0,
         "tasa_impuesto": 30, "acciones": 200_000, "precio_accion": 35, "dividendos": 150_000,
     },
     "2025": {
@@ -80,7 +81,7 @@ ESTADOS_EJEMPLO = {
         "cuentas_pagar": 780_000, "prestamos_cp": 380_000, "otros_pc": 190_000, "prestamos_lp": 1_800_000,
         "capital": 2_000_000, "utilidades_retenidas": 1_450_000,
         "ventas": 9_200_000, "costo_ventas": 5_888_000, "gastos_venta": 980_000, "gastos_admin": 760_000,
-        "depreciacion": 320_000, "intereses": 210_000,
+        "depreciacion": 320_000, "intereses": 210_000, "otros_ingresos": 0,
         "tasa_impuesto": 30, "acciones": 200_000, "precio_accion": 45, "dividendos": 279_400,
     },
 }
@@ -328,7 +329,8 @@ def importar_json(texto: str) -> None:
         if k == "mov_inv":
             df["Fecha"] = pd.to_datetime(df["Fecha"]).dt.date
         if k == "estados":
-            df = df.astype(float)
+            orden = [c for c, *_ in CUENTAS_BALANCE + CUENTAS_RESULTADOS + DATOS_ADICIONALES]
+            df = df.astype(float).reindex(orden).fillna(0.0)
         else:
             df = df.reset_index(drop=True)
         tablas[k] = df
