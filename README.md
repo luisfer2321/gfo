@@ -32,7 +32,7 @@ python -m pytest
 | Módulo | Contenido | Página |
 |---|---|---|
 | Panel principal | Indicadores clave de todos los módulos y acceso rápido | `vistas/inicio.py` |
-| Estados financieros | Balance General y Estado de Resultados de uno o más períodos | `vistas/estados.py` |
+| Estados financieros | Balance General y Estado de Resultados de uno o más períodos, escritos a mano o importados desde Excel | `vistas/estados.py` |
 | Análisis financiero | Análisis horizontal y vertical, 25 razones financieras y sistema DuPont | `vistas/analisis.py` |
 | Punto de equilibrio y C-V-U | PE en unidades y en C$, margen de seguridad, escenarios, sensibilidad y utilidad deseada | `vistas/equilibrio.py` |
 | Apalancamiento | GAO, GAF y GAT, con su comprobación | `vistas/apalancamiento.py` |
@@ -62,6 +62,7 @@ Los datos se capturan una sola vez y los demás módulos los reutilizan. Por eje
 ```
 app.py              Punto de entrada: configuración, navegación y barra lateral
 gfo/calculos.py     TODAS las fórmulas financieras (funciones puras, sin interfaz)
+gfo/importar.py     Lectura de estados financieros desde Excel/CSV
 gfo/datos.py        Catálogo de cuentas, datos de ejemplo y manejo del estado de la sesión
 gfo/ui.py           Estilos, formatos (C$, %, veces, días), tarjetas y gráficos
 vistas/*.py         Una página por módulo (solo muestra resultados)
@@ -70,6 +71,23 @@ tests/              Pruebas que validan los cálculos con resultados hechos a ma
 
 Para encontrar un cálculo durante la defensa, busque en `gfo/calculos.py`. Cada página indica debajo de la fórmula
 qué función hace el cálculo (por ejemplo, `gfo/calculos.py → cvu()`).
+
+## Importar estados financieros desde Excel
+
+En **Estados financieros → Importar desde Excel** se pueden subir el Balance General y el Estado de Resultados
+(`.xlsx` o `.csv`), en un solo archivo o en varios. El formato es libre: una columna con el nombre de la cuenta y
+una columna por período (`2024`, `2025`, `Al 31/12/2025`…). Se aceptan títulos, códigos contables, filas de
+totales, montos con `C$`, montos entre paréntesis y gastos en negativo.
+
+- Las cuentas se reconocen por su nombre y sinónimos comunes (Caja + Bancos → Efectivo; Clientes → Cuentas por
+  cobrar; Edificios + Vehículos − Depreciación acumulada → PPE neto; Ventas − Devoluciones → Ventas netas…).
+- Una cuenta sin equivalente directo se suma al rubro "otros" de la sección donde aparece (por ejemplo, IVA
+  acreditable → Otros activos corrientes).
+- La tasa de impuesto se calcula con Impuesto ÷ UAI, y los dividendos con la variación de las utilidades retenidas.
+- Las filas de totales del archivo se comparan con los totales que calcula el sistema.
+- Antes de aplicar, se muestra una vista previa, cómo se asignó cada fila y las filas que no se reconocieron.
+
+Hay una plantilla de ejemplo para descargar en esa misma pestaña. El código está en `gfo/importar.py`.
 
 ## Manejo de datos
 

@@ -239,6 +239,28 @@ def agregar_periodo(nombre: str) -> None:
     _reiniciar_widgets()
 
 
+def cargar_estados(nueva: pd.DataFrame, reemplazar: bool) -> None:
+    """Carga estados importados: reemplaza todos los períodos o agrega/actualiza los importados."""
+    ss = st.session_state
+    if reemplazar:
+        ss.tablas["estados"] = nueva.copy()
+    else:
+        actual = tabla("estados").copy()
+        for p in nueva.columns:
+            datos_previos = actual[p] if p in actual.columns else None
+            actual[p] = nueva[p]
+            # Conserva los datos de mercado ya registrados si el archivo no los trae
+            if datos_previos is not None:
+                for k in ("acciones", "precio_accion"):
+                    if not nueva.loc[k, p]:
+                        actual.loc[k, p] = datos_previos[k]
+        cols = list(actual.columns)
+        if all(str(c).isdigit() for c in cols):
+            cols = sorted(cols)
+        ss.tablas["estados"] = actual[cols]
+    _reiniciar_widgets()
+
+
 def eliminar_periodo(nombre: str) -> None:
     tabla("estados").drop(columns=[nombre], inplace=True)
     _reiniciar_widgets()
