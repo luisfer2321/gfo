@@ -9,6 +9,8 @@ from __future__ import annotations
 
 import copy
 import json
+import re
+import unicodedata
 
 import pandas as pd
 import streamlit as st
@@ -223,11 +225,15 @@ def periodos() -> list[str]:
     return list(tabla("estados").columns)
 
 
-def cuentas_periodo(periodo: str) -> dict:
+def cuentas_de(estados: pd.DataFrame, periodo: str) -> dict:
     """Cuentas de entrada de un período, con la tasa de impuesto como fracción."""
-    p = tabla("estados")[periodo].fillna(0).to_dict()
+    p = estados[periodo].fillna(0).to_dict()
     p["tasa_impuesto"] = p["tasa_impuesto"] / 100
     return p
+
+
+def cuentas_periodo(periodo: str) -> dict:
+    return cuentas_de(tabla("estados"), periodo)
 
 
 def periodo_calculado(periodo: str) -> dict:
@@ -268,9 +274,11 @@ def eliminar_periodo(nombre: str) -> None:
 
 
 def supuestos_presupuesto() -> dict:
+    return supuestos_de(params(), cuentas_periodo(periodos()[-1]))
+
+
+def supuestos_de(P: dict, ultimo: dict) -> dict:
     """Supuestos del presupuesto maestro en el formato que espera el motor de cálculo."""
-    P = params()
-    ultimo = cuentas_periodo(periodos()[-1])
     return {
         "precio": P["pm_precio"], "costo_unitario": P["pm_costo"],
         "pct_contado": P["pm_contado"] / 100, "pct_compras_contado": P["pm_compras_contado"] / 100,
@@ -296,10 +304,13 @@ def personal() -> dict:
 
 
 def cvu_base() -> dict:
+    return cvu_base_de(params(), cuentas_periodo(periodos()[-1]))
+
+
+def cvu_base_de(P: dict, ultimo: dict) -> dict:
     """Datos base del modelo C-V-U según el origen elegido (estados financieros o manual)."""
-    P = params()
     if P["pe_origen"] == "Estados financieros":
-        return calc.cvu_desde_estados(cuentas_periodo(periodos()[-1]), P["pe_precio_ef"])
+        return calc.cvu_desde_estados(ultimo, P["pe_precio_ef"])
     return {"precio": P["pe_precio"], "cv_unitario": P["pe_cvu"], "costos_fijos": P["pe_cf"],
             "unidades": P["pe_unidades"]}
 
@@ -319,6 +330,26 @@ def exportar_json() -> str:
         tablas[k] = json.loads(d.to_json(orient="split", date_format="iso"))
     return json.dumps({"empresa": ss.empresa, "params": ss.params, "tablas": tablas},
                       ensure_ascii=False, indent=2)
+
+
+def generador_reporte():
+    """Devuelve una función sin argumentos que genera el reporte de análisis en Excel.
+
+    Se toma una copia de los datos actuales porque Streamlit ejecuta la función en
+    otro hilo al presionar el botón de descarga, sin acceso a la sesión.
+    """
+    from gfo import reporte
+
+    ss = st.session_state
+    estados, empresa, P = tabla("estados").copy(), dict(ss.empresa), dict(ss.params)
+    trimestres, mov_caja = tabla("trimestres").copy(), tabla("mov_caja").copy()
+    return lambda: reporte.generar(estados, empresa, P, trimestres, mov_caja)
+
+
+def nombre_reporte() -> str:
+    base = re.sub(r"[^A-Za-z0-9]+", "_", unicodedata.normalize("NFKD", st.session_state.empresa["nombre"])
+                  .encode("ascii", "ignore").decode()).strip("_") or "empresa"
+    return f"Analisis_financiero_{base}.xlsx"
 
 
 def importar_json(texto: str) -> None:

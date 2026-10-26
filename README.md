@@ -63,6 +63,7 @@ Los datos se capturan una sola vez y los demás módulos los reutilizan. Por eje
 app.py              Punto de entrada: configuración, navegación y barra lateral
 gfo/calculos.py     TODAS las fórmulas financieras (funciones puras, sin interfaz)
 gfo/importar.py     Lectura de estados financieros desde Excel/CSV
+gfo/reporte.py      Reporte de análisis en Excel (exportación)
 gfo/datos.py        Catálogo de cuentas, datos de ejemplo y manejo del estado de la sesión
 gfo/ui.py           Estilos, formatos (C$, %, veces, días), tarjetas y gráficos
 vistas/*.py         Una página por módulo (solo muestra resultados)
@@ -88,6 +89,19 @@ totales, montos con `C$`, montos entre paréntesis y gastos en negativo.
 - Antes de aplicar, se muestra una vista previa, cómo se asignó cada fila y las filas que no se reconocieron.
 
 Hay una plantilla de ejemplo para descargar en esa misma pestaña. El código está en `gfo/importar.py`.
+
+## Exportar el análisis a Excel
+
+El botón **Exportar análisis a Excel** (barra lateral, y también en *Proforma y reporte integrado*) descarga un
+libro con una hoja por análisis de la empresa:
+
+Resumen (indicadores clave, diagnóstico, hallazgos y gráfico) · Balance General · Estado de Resultados ·
+Análisis horizontal · Análisis vertical · Razones financieras · Sistema DuPont · Punto de equilibrio (con
+escenarios, sensibilidad y gráfico) · Apalancamiento · Flujo de efectivo · Presupuesto maestro (cédulas y
+gráficos) · Estados proforma.
+
+No incluye el presupuesto personal ni el control de inventario. El código está en `gfo/reporte.py` y usa las
+mismas funciones de `gfo/calculos.py` que la aplicación, así que los valores coinciden con los de pantalla.
 
 ## Manejo de datos
 

@@ -152,7 +152,7 @@ def razones_financieras(p: dict) -> dict:
     upa = dividir(d["utilidad_neta"], d["acciones"])
     vla = dividir(d["patrimonio"], d["acciones"])
     precio = d["precio_accion"] or None
-    return {
+    r = {
         "razon_corriente": dividir(d["activo_corriente"], d["pasivo_corriente"]),
         "prueba_acida": dividir(d["activo_corriente"] - d["inventarios"], d["pasivo_corriente"]),
         "razon_efectivo": dividir(d["efectivo"], d["pasivo_corriente"]),
@@ -179,6 +179,20 @@ def razones_financieras(p: dict) -> dict:
         "precio_valor_libros": dividir(precio, vla),
         "dividendo_accion": dividir(d["dividendos"], d["acciones"]),
     }
+    if not tiene_estado_resultados(p):
+        # Período con solo Balance General: las razones que usan cifras de resultados no aplican
+        r.update({k: None for k in RAZONES_DE_RESULTADOS})
+    return r
+
+
+RAZONES_DE_RESULTADOS = ("rotacion_inventario", "dias_inventario", "rotacion_cxc", "periodo_cobro", "rotacion_cxp",
+                         "periodo_pago", "rotacion_activos", "cobertura_intereses", "margen_bruto", "margen_operativo",
+                         "margen_neto", "roa", "roe", "upa", "precio_utilidad")
+
+
+def tiene_estado_resultados(p: dict) -> bool:
+    """True si el período tiene cifras de Estado de Resultados (no solo Balance General)."""
+    return any(p.get(k) for k in ("ventas", "costo_ventas", "gastos_venta", "gastos_admin", "depreciacion", "intereses"))
 
 
 # Rangos de referencia académicos generales: (bueno_desde, aceptable_desde, mayor_es_mejor)
