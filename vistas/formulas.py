@@ -14,7 +14,7 @@ secciones = {
     "Estados financieros · estado_resultados(), totales_balance()": [
         ("Utilidad bruta", "Ventas − Costo de ventas"),
         ("Utilidad operativa (UAII)", "Utilidad bruta − Gastos de venta − Gastos de administración − Depreciación"),
-        ("Utilidad antes de impuestos (UAI)", "UAII − Gastos por intereses"),
+        ("Utilidad antes de impuestos (UAI)", "UAII − Gastos por intereses ± Otros ingresos (gastos) netos"),
         ("Impuesto sobre la renta", "UAI × Tasa de impuesto (si UAI > 0)"),
         ("Utilidad neta", "UAI − Impuesto"),
         ("Ecuación contable", "Activo = Pasivo + Patrimonio"),

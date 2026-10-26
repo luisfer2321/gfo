@@ -61,10 +61,11 @@ def revisar_importacion(archivos) -> None:
             ui.tabla_estado([(datos.NOMBRES[k], [calc_n[p][k] for p in r["periodos"]],
                               "total" if k == "utilidad_neta" else "sub" if k in ("utilidad_bruta", "uaii", "uai") else "")
                              for k in ["ventas", "costo_ventas", "utilidad_bruta", "gastos_venta", "gastos_admin",
-                                       "depreciacion", "uaii", "intereses", "uai", "impuestos", "utilidad_neta"]],
+                                       "depreciacion", "uaii", "intereses", "otros_ingresos", "uai", "impuestos", "utilidad_neta"]],
                             r["periodos"])
             st.caption(ui.md("Tasa de impuesto: " + ", ".join(f"{p}: {nueva.loc['tasa_impuesto', p]:.2f} %" for p in r["periodos"])
-                       + ". Dividendos estimados con la variación de utilidades retenidas. Las acciones y el precio "
+                       + ". Los dividendos se toman del archivo o se estiman con la variación de utilidades retenidas. "
+                           "Las acciones y el precio "
                        "de mercado no vienen en los estados: puede escribirlos después en «Datos complementarios»."))
     with t2:
         st.dataframe(r["detalle"], hide_index=True)
@@ -205,14 +206,14 @@ with tab_er:
     st.markdown(ui.md(f"#### {st.session_state.empresa['nombre']}  \nEstado de Resultados del período · cifras en C$"))
     lineas = [("ventas", ""), ("costo_ventas", "-"), ("utilidad_bruta", "sub"), ("gastos_venta", "-"),
               ("gastos_admin", "-"), ("depreciacion", "-"), ("gastos_operacion", "sub"), ("uaii", "sub"),
-              ("intereses", "-"), ("uai", "sub"), ("impuestos", "-"), ("utilidad_neta", "total")]
+              ("intereses", "-"), ("otros_ingresos", ""), ("uai", "sub"), ("impuestos", "-"), ("utilidad_neta", "total")]
     filas = []
     for k, estilo in lineas:
         nombre = ("(−) " if estilo == "-" else "") + datos.NOMBRES[k]
         filas.append((nombre, [calculados[p][k] for p in periodos], "" if estilo == "-" else estilo))
     ui.tabla_estado(filas, periodos)
     ui.formula("<b>Cálculo:</b> Utilidad bruta = Ventas − Costo de ventas · "
-               "UAII = Utilidad bruta − Gastos de operación · UAI = UAII − Intereses · "
+               "UAII = Utilidad bruta − Gastos de operación · UAI = UAII − Intereses ± Otros ingresos (gastos) · "
                "Impuesto = UAI × tasa · Utilidad neta = UAI − Impuesto "
                "<br><span class='note'>Código: <code>gfo/calculos.py → estado_resultados()</code></span>")
 

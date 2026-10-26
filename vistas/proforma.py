@@ -26,7 +26,7 @@ t1, t2, t3 = st.tabs([":material/receipt_long: Estado de resultados proforma", "
 
 with t1:
     lineas = [("ventas", ""), ("costo_ventas", "-"), ("utilidad_bruta", "sub"), ("gastos_venta", "-"),
-              ("gastos_admin", "-"), ("depreciacion", "-"), ("uaii", "sub"), ("intereses", "-"), ("uai", "sub"),
+              ("gastos_admin", "-"), ("depreciacion", "-"), ("uaii", "sub"), ("intereses", "-"), ("otros_ingresos", ""), ("uai", "sub"),
               ("impuestos", "-"), ("utilidad_neta", "total")]
     izq, der = st.columns([1.3, 1])
     with izq:

@@ -100,3 +100,33 @@ def test_fila_desconocida_se_reporta():
     filas = [["Cuenta", 2025], ["Ventas", 1000], ["Costo de ventas", 600], ["Regalías extraordinarias", 50]]
     r = importar.interpretar(importar.leer_archivos([("er.xlsx", excel(filas, "Estado de resultados"))]))
     assert list(r["no_reconocidas"]["Cuenta del archivo"]) == ["Regalías extraordinarias"]
+
+
+def test_una_hoja_por_estado_con_columna_monto():
+    """Cada estado en su hoja, con el año solo en el nombre de la hoja o en el título."""
+    def balance(anio, efectivo, ur):
+        return [["Comercial Ejemplo, S.A.", None], [f"Balance General al 31 de diciembre de {anio}", None],
+                ["Concepto", "Monto (C$)"], ["ACTIVO", None], ["Activo corriente", None],
+                ["Efectivo y equivalentes", efectivo], ["Inventarios", 1_000],
+                ["TOTAL ACTIVO", efectivo + 1_000], ["PATRIMONIO", None], ["Capital social", efectivo + 1_000 - ur],
+                ["Utilidades retenidas", ur], ["TOTAL PASIVO + PATRIMONIO", efectivo + 1_000],
+                ["Control: Activo − (Pasivo + Patrimonio)", 0]]
+    er = [["Estado de Resultados del 1 de enero al 31 de diciembre de 2026", None], ["Concepto", "Monto (C$)"],
+          ["Ventas netas", 10_000], ["Costo de ventas", -6_000], ["Gastos financieros (intereses)", -1_000],
+          ["Otros ingresos", 500], ["UTILIDAD ANTES DE IMPUESTOS", 3_500], ["Tasa de impuesto sobre la renta", 0.3],
+          ["Impuesto sobre la renta", -1_050], ["UTILIDAD NETA", 2_450], ["Dividendos decretados en 2026", 450]]
+    buf = io.BytesIO()
+    with pd.ExcelWriter(buf, engine="openpyxl") as w:
+        pd.DataFrame(balance(2025, 500, 1_000)).to_excel(w, sheet_name="Hoja A", header=False, index=False)
+        pd.DataFrame(balance(2026, 2_500, 3_000)).to_excel(w, sheet_name="Balance General 2026", header=False, index=False)
+        pd.DataFrame(er).to_excel(w, sheet_name="Estado de Resultados", header=False, index=False)
+    r = importar.interpretar(importar.leer_archivos([("estados.xlsx", buf.getvalue())]))
+    assert r["periodos"] == ["2025", "2026"]
+    assert r["estados"]["2025"]["efectivo"] == 500 and r["estados"]["2026"]["efectivo"] == 2_500
+    e = r["estados"]["2026"]
+    assert e["otros_ingresos"] == 500
+    assert e["tasa_impuesto"] == 30          # la fila "Tasa" no se suma como impuesto
+    assert e["dividendos"] == 450
+    assert r["no_reconocidas"].empty
+    assert (r["verificaciones"]["Coincide"] == "✓").all()
+    assert any("solo tiene Balance General" in a for a in r["avisos"])
