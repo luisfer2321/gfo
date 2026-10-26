@@ -29,6 +29,15 @@ with st.container(border=True):
             f"costos fijos = Gastos de administración + Depreciación = <b>{ui.cs(b['costos_fijos'])}</b></div>",
             unsafe_allow_html=True)
     else:
+        # Al pasar de "Estados financieros" a "Manual" se parte de los mismos datos, para que el
+        # resultado solo cambie cuando el usuario modifique algún valor.
+        if P.get("pe_origen_previo") == "Estados financieros":
+            b0 = calc.cvu_desde_estados(datos.cuentas_periodo(ultimo), P["pe_precio_ef"])
+            P.update(pe_precio=b0["precio"], pe_cvu=b0["cv_unitario"], pe_cf=b0["costos_fijos"], pe_unidades=b0["unidades"])
+            for k in ("pe_precio", "pe_cvu", "pe_cf", "pe_unidades"):
+                st.session_state.pop(f"w_{k}_{st.session_state.version}", None)
+        st.caption(ui.md(f"Los valores iniciales vienen del Estado de Resultados {ultimo}. Modifíquelos para simular "
+                         "otro producto o escenario."))
         c1, c2, c3, c4 = st.columns(4)
         with c1:
             ui.entrada("Precio de venta unitario (C$)", "pe_precio", min_value=0.01, step=5.0, format="%.2f")
@@ -38,6 +47,7 @@ with st.container(border=True):
             ui.entrada("Costos fijos totales (C$)", "pe_cf", min_value=0.0, step=10_000.0, format="%.2f")
         with c4:
             ui.entrada("Unidades a vender", "pe_unidades", min_value=0.0, step=100.0, format="%.0f")
+    P["pe_origen_previo"] = origen
     b = datos.cvu_base()
 
 r = calc.cvu(b["precio"], b["cv_unitario"], b["costos_fijos"], b["unidades"])
