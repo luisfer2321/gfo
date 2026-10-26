@@ -42,6 +42,11 @@ with st.sidebar:
     st.markdown(f"**{st.session_state.empresa['nombre']}**  \n"
                 f"<span class='note'>{st.session_state.empresa['giro']}</span>", unsafe_allow_html=True)
     st.caption(f"Períodos registrados: {', '.join(datos.periodos())}")
+    st.download_button("Exportar análisis a Excel", datos.generador_reporte(), file_name=datos.nombre_reporte(),
+                       mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                       icon=":material/download:", type="primary", width="stretch",
+                       help="Reporte con los estados financieros y todos los análisis de la empresa "
+                            "(no incluye el presupuesto personal ni el inventario).")
     with st.expander("Guardar o cargar datos", icon=":material/save:"):
         st.download_button("Exportar datos (JSON)", datos.exportar_json(), file_name="datos_financieros.json",
                            mime="application/json", icon=":material/download:", width="stretch")

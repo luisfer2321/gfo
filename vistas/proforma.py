@@ -95,6 +95,9 @@ with t3:
     with izq:
         st.markdown("##### Indicadores clave: históricos y proyectados")
         st.dataframe(tabla, hide_index=True, height=458)
+        st.download_button("Exportar análisis completo (Excel)", datos.generador_reporte(), file_name=datos.nombre_reporte(),
+                           mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                           icon=":material/table_view:", type="primary")
         st.download_button("Descargar resumen (CSV)", tabla.to_csv(index=False).encode("utf-8-sig"), "reporte_integrado.csv",
                            "text/csv", icon=":material/download:")
     with der:

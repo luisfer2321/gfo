@@ -177,3 +177,10 @@ def test_inventario_detecta_existencia_negativa():
                        columns=["Fecha", "Código", "Tipo", "Cantidad", "Detalle"])
     r = calc.control_inventario(datos.PRODUCTOS_EJEMPLO, mov)
     assert any("negativa" in e for e in r["errores"])
+
+
+def test_periodo_solo_con_balance():
+    p = dict(P25, ventas=0, costo_ventas=0, gastos_venta=0, gastos_admin=0, depreciacion=0, intereses=0)
+    r = calc.razones_financieras(p)
+    assert r["razon_corriente"] == pytest.approx(2_760_000 / 1_350_000)   # las de balance sí se calculan
+    assert r["roe"] is None and r["roa"] is None and r["rotacion_inventario"] is None
