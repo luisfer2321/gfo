@@ -109,7 +109,7 @@ with tabs[6]:
     ui.formula("<b>Saldo antes de financiamiento</b> = Saldo inicial + Cobros − Egresos. "
                f"Si es menor que el saldo mínimo ({ui.cs(P['pm_saldo_min'])}) se solicita un préstamo de corto plazo por la "
                "diferencia; cuando hay excedente se abona al préstamo. Los impuestos e intereses se distribuyen en partes "
-               "iguales. <br><span class='note'>Código: <code>gfo/calculos.py → presupuesto_maestro()</code></span>")
+               "iguales.")
 
 st.write("")
 g1, g2 = st.columns(2)

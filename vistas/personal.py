@@ -47,7 +47,7 @@ ui.fila_kpis([
 st.write("")
 ui.formula("<b>Capacidad de ahorro</b> = Total ingresos − Total gastos &nbsp;·&nbsp; <b>% de ahorro</b> = Capacidad de ahorro ÷ "
            "Total ingresos &nbsp;·&nbsp; <b>Saldo disponible</b> = Total ingresos − Total gastos − Ahorro planificado"
-           "<br><span class='note'>Código: <code>gfo/calculos.py → presupuesto_personal()</code></span>")
+           "")
 st.write("")
 
 g1, g2 = st.columns([1.3, 1])

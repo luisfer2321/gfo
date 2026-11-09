@@ -1,4 +1,4 @@
-"""Referencia de fórmulas, criterios de interpretación y ubicación en el código."""
+"""Referencia de fórmulas y criterios de interpretación."""
 
 import pandas as pd
 import streamlit as st
@@ -7,11 +7,11 @@ from gfo import calculos as calc
 from gfo import ui
 
 ui.encabezado("Fórmulas utilizadas",
-              "Resumen de las fórmulas que aplica el sistema y de la función de <code>gfo/calculos.py</code> donde se "
-              "calcula cada una. Útil para la defensa individual y para comprobar los resultados manualmente.", "Referencia")
+              "Resumen de las fórmulas que aplica el sistema. "
+              "Útil para la defensa individual y para comprobar los resultados manualmente.", "Referencia")
 
 secciones = {
-    "Estados financieros · estado_resultados(), totales_balance()": [
+    "Estados financieros": [
         ("Utilidad bruta", "Ventas − Costo de ventas"),
         ("Utilidad operativa (UAII)", "Utilidad bruta − Gastos de venta − Gastos de administración − Depreciación"),
         ("Utilidad antes de impuestos (UAI)", "UAII − Gastos por intereses ± Otros ingresos (gastos) netos"),
@@ -19,17 +19,17 @@ secciones = {
         ("Utilidad neta", "UAI − Impuesto"),
         ("Ecuación contable", "Activo = Pasivo + Patrimonio"),
     ],
-    "Análisis horizontal y vertical · analisis_horizontal(), analisis_vertical()": [
+    "Análisis horizontal y vertical": [
         ("Variación absoluta", "Valor período actual − Valor período base"),
         ("Variación relativa", "Variación absoluta ÷ Valor período base × 100"),
         ("Análisis vertical (Balance)", "Cuenta ÷ Activo total × 100"),
         ("Análisis vertical (Resultados)", "Cuenta ÷ Ventas netas × 100"),
     ],
-    "Sistema DuPont · dupont()": [
+    "Sistema DuPont": [
         ("ROA", "Margen neto × Rotación de activos totales"),
         ("ROE", "Margen neto × Rotación de activos totales × Multiplicador del capital"),
     ],
-    "Punto de equilibrio y C-V-U · cvu(), escenario_cvu(), unidades_para_utilidad()": [
+    "Punto de equilibrio y C-V-U": [
         ("Margen de contribución unitario", "Precio − Costo variable unitario"),
         ("Razón de margen de contribución", "MCu ÷ Precio"),
         ("Punto de equilibrio en unidades", "Costos fijos ÷ MCu"),
@@ -38,21 +38,21 @@ secciones = {
         ("Margen de seguridad", "(Unidades esperadas − PE en unidades) ÷ Unidades esperadas"),
         ("Unidades para utilidad deseada", "(Costos fijos + Utilidad deseada) ÷ MCu"),
     ],
-    "Apalancamiento · apalancamiento(), efecto_apalancamiento()": [
+    "Apalancamiento": [
         ("Grado de apalancamiento operativo (GAO)", "Margen de contribución ÷ UAII"),
         ("Grado de apalancamiento financiero (GAF)", "UAII ÷ [UAII − Intereses − Dividendos preferentes ÷ (1 − t)]"),
         ("Grado de apalancamiento total (GAT)", "GAO × GAF"),
         ("Efecto en la UAII", "Δ% UAII = GAO × Δ% Ventas"),
         ("Efecto en la UPA", "Δ% UPA = GAT × Δ% Ventas"),
     ],
-    "Flujo de efectivo · flujo_efectivo_indirecto(), flujo_efectivo_directo()": [
+    "Flujo de efectivo": [
         ("Flujo de operación (indirecto)", "Utilidad neta + Depreciación − Δ CxC − Δ Inventarios − Δ Otros AC + Δ CxP + Δ Otros PC"),
         ("Flujo de inversión", "−(Δ PPE neto + Depreciación) − Δ Otros activos no corrientes"),
         ("Flujo de financiamiento", "Δ Préstamos CP + Δ Préstamos LP + Δ Capital − Dividendos"),
         ("Flujo por actividad (directo)", "Σ Entradas − Σ Salidas"),
         ("Saldo final de efectivo", "Saldo inicial + Variación neta"),
     ],
-    "Presupuesto maestro · presupuesto_maestro()": [
+    "Presupuesto maestro": [
         ("Presupuesto de ventas", "Unidades × Precio"),
         ("Cobros", "Ventas del trimestre × % contado + Ventas del trimestre anterior × % crédito"),
         ("Unidades a comprar", "Ventas + Inventario final deseado − Inventario inicial"),
@@ -61,12 +61,12 @@ secciones = {
         ("Saldo de caja", "Saldo inicial + Cobros − Egresos ± Financiamiento"),
         ("Financiamiento requerido", "Saldo mínimo − Saldo antes de financiamiento (si es positivo)"),
     ],
-    "Presupuesto personal · presupuesto_personal()": [
+    "Presupuesto personal": [
         ("Capacidad de ahorro", "Total ingresos − Total gastos"),
         ("Porcentaje de ahorro", "Capacidad de ahorro ÷ Total ingresos × 100"),
         ("Saldo disponible", "Total ingresos − Total gastos − Ahorro planificado"),
     ],
-    "Control de inventario · control_inventario()": [
+    "Control de inventario": [
         ("Existencia final", "Existencia inicial + Entradas − Salidas"),
         ("Valor del inventario", "Existencia final × Costo unitario"),
         ("Alerta de reposición", "Existencia final ≤ Stock mínimo"),
@@ -78,7 +78,7 @@ for titulo, filas in secciones.items():
     with st.expander(titulo, expanded=False):
         st.dataframe(pd.DataFrame(filas, columns=["Concepto", "Fórmula"]), hide_index=True)
 
-with st.expander("Razones financieras · razones_financieras(), evaluar_razon(), interpretar_razon()", expanded=True):
+with st.expander("Razones financieras", expanded=True):
     st.dataframe(pd.DataFrame([{"Categoría": i["categoria"], "Razón": i["nombre"], "Fórmula": i["formula"],
                                 "Unidad": i["unidad"]} for i in calc.INFO_RAZON.values()]), hide_index=True)
     st.markdown("**Criterios de evaluación** (referencias académicas generales)")

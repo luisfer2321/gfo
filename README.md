@@ -70,8 +70,8 @@ vistas/*.py         Una página por módulo (solo muestra resultados)
 tests/              Pruebas que validan los cálculos con resultados hechos a mano
 ```
 
-Para encontrar un cálculo durante la defensa, busque en `gfo/calculos.py`. Cada página indica debajo de la fórmula
-qué función hace el cálculo (por ejemplo, `gfo/calculos.py → cvu()`).
+Para encontrar un cálculo durante la defensa, busque en `gfo/calculos.py`; cada fórmula está en una función con
+el nombre del análisis (por ejemplo, `cvu()` para el punto de equilibrio).
 
 ## Importar estados financieros desde Excel
 

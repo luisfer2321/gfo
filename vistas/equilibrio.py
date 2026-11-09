@@ -108,8 +108,7 @@ with t1:
         ui.formula(
             "<b>MCu</b> = Precio − CVu<br><b>RMC</b> = MCu ÷ Precio<br>"
             "<b>PE (u)</b> = CF ÷ MCu<br><b>PE (C$)</b> = CF ÷ RMC<br>"
-            "<b>Utilidad</b> = Q × MCu − CF<br><b>Margen de seguridad</b> = (Q − PE) ÷ Q<br>"
-            "<span class='note'>Código: <code>gfo/calculos.py → cvu()</code></span>")
+            "<b>Utilidad</b> = Q × MCu − CF<br><b>Margen de seguridad</b> = (Q − PE) ÷ Q")
         st.write("")
         st.markdown(ui.md(f"**Comprobación:** {ui.cs(r['costos_fijos'])} ÷ {ui.cs(r['mcu'])} = **{ui.num(r['pe_unidades'], 2)} unidades**. "
             f"En ese nivel las ventas ({ui.cs(r['pe_monetario'])}) cubren exactamente los costos fijos y variables."))
@@ -179,7 +178,7 @@ with t3:
     with c2:
         ui.formula("<b>Unidades necesarias</b> = (Costos fijos + Utilidad deseada) ÷ MCu"
                    f"<br>= ({ui.cs(r['costos_fijos'])} + {ui.cs(obj)}) ÷ {ui.cs(r['mcu'])} = <b>{ui.num(u, 2)} unidades</b>"
-                   "<br><span class='note'>Código: <code>gfo/calculos.py → unidades_para_utilidad()</code></span>")
+                   "")
     ui.fila_kpis([
         ui.kpi("Unidades requeridas", ui.num(u, 2), "para lograr la utilidad deseada"),
         ui.kpi("Ventas requeridas", ui.cs(u * r["precio"]), "ingresos totales"),

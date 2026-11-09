@@ -35,8 +35,7 @@ with t1:
                          for k, e in lineas], [ultimo, proy, "Cambio"])
     with der:
         ui.formula("Ventas, costo de bienes vendidos y gastos provienen de las cédulas del presupuesto maestro. "
-                   "Impuesto = UAI × tasa del último período.<br><span class='note'>Código: "
-                   "<code>gfo/calculos.py → presupuesto_maestro()</code>, paso 7</span>")
+                   "Impuesto = UAI × tasa del último período.")
         fig = ui.figura("Real vs. proforma", 300)
         conceptos = [("Ventas", "ventas"), ("Utilidad bruta", "utilidad_bruta"), ("UAII", "uaii"), ("Utilidad neta", "utilidad_neta")]
         ui.barras(fig, [c for c, _ in conceptos], [real[ultimo][k] for _, k in conceptos], ultimo, ui.SERIES[0],

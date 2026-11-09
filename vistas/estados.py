@@ -215,7 +215,7 @@ with tab_er:
     ui.formula("<b>Cálculo:</b> Utilidad bruta = Ventas − Costo de ventas · "
                "UAII = Utilidad bruta − Gastos de operación · UAI = UAII − Intereses ± Otros ingresos (gastos) · "
                "Impuesto = UAI × tasa · Utilidad neta = UAI − Impuesto "
-               "<br><span class='note'>Código: <code>gfo/calculos.py → estado_resultados()</code></span>")
+               "")
 
 with tab_graf:
     g1, g2 = st.columns(2)

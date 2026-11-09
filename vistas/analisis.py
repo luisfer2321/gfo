@@ -41,7 +41,7 @@ with t_h:
         st.info("El análisis horizontal necesita al menos dos períodos. Agregue otro período en **Estados financieros**.")
     else:
         ui.formula(f"<b>Variación absoluta</b> = {actual} − {base} &nbsp;·&nbsp; <b>Variación relativa</b> = "
-                   f"({actual} − {base}) ÷ {base} × 100 <br><span class='note'>Código: <code>gfo/calculos.py → analisis_horizontal()</code></span>")
+                   f"({actual} − {base}) ÷ {base} × 100")
         st.write("")
         for titulo, lineas in (("Balance General", LINEAS_BG), ("Estado de Resultados", LINEAS_ER)):
             claves = [k for k, _, _ in lineas]
@@ -79,7 +79,7 @@ with t_h:
 with t_v:
     ui.formula("<b>Balance General:</b> % = Cuenta ÷ Activo total × 100 &nbsp;·&nbsp; "
                "<b>Estado de Resultados:</b> % = Cuenta ÷ Ventas netas × 100"
-               "<br><span class='note'>Código: <code>gfo/calculos.py → analisis_vertical()</code></span>")
+               "")
     st.write("")
     cols = st.columns(2)
     for col, (titulo, lineas, total) in zip(cols, (("Balance General (% del activo total)", LINEAS_BG, "activo_total"),
@@ -185,7 +185,7 @@ with t_d:
     ui.formula("<b>ROE</b> = Margen neto × Rotación de activos × Multiplicador del capital "
                "= (Utilidad neta ÷ Ventas) × (Ventas ÷ Activo total) × (Activo total ÷ Patrimonio)"
                "<br><b>ROA</b> = Margen neto × Rotación de activos"
-               "<br><span class='note'>Código: <code>gfo/calculos.py → dupont()</code></span>")
+               "")
     st.write("")
     caja = ('<div style="background:#fff;border:1px solid rgba(11,11,11,.09);border-radius:14px;padding:12px 10px;'
             'text-align:center;height:100%"><div style="color:#52514e;font-size:.78rem;font-weight:600">{t}</div>'

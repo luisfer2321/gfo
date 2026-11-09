@@ -50,7 +50,7 @@ with izq:
         + (f" − {ui.cs(dp)} ÷ (1 − {ui.pct(p['tasa_impuesto'], 0)})" if dp else "")
         + f") = <b>{ui.veces(a['gaf'])}</b><br>"
         f"<b>GAT</b> = {ui.num(a['gao'], 4)} × {ui.num(a['gaf'], 4)} = <b>{ui.veces(a['gat'])}</b>"
-        "<br><span class='note'>Código: <code>gfo/calculos.py → apalancamiento()</code></span>")
+        "")
 
 with der:
     fig = ui.figura(f"Efecto de un cambio de {cambio:+d} % en ventas", 330, leyenda=False)

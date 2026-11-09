@@ -65,8 +65,7 @@ with t1:
                            icon=":material/warning:")
             ui.formula("<b>Operación</b> = Utilidad neta + Depreciación ± variaciones del capital de trabajo<br>"
                        "<b>Inversión</b> = −(Δ PPE neto + Depreciación) − Δ otros activos no corrientes<br>"
-                       "<b>Financiamiento</b> = Δ préstamos + Δ capital − Dividendos<br>"
-                       "<span class='note'>Código: <code>gfo/calculos.py → flujo_efectivo_indirecto()</code></span>")
+                       "<b>Financiamiento</b> = Δ préstamos + Δ capital − Dividendos")
         fo, un = f["flujo_operacion"], f["operacion"][0][1]
         st.info(ui.md(f"La operación generó {ui.cs(fo)}, equivalente a {ui.num(calc.dividir(fo, un), 2)} veces la utilidad neta. "
                 + ("La empresa financia sus inversiones con recursos propios de la operación." if fo >= -f["flujo_inversion"]
@@ -98,4 +97,4 @@ with t2:
         ui.mostrar(cascada("", r["saldo_inicial"], fl["Operación"], fl["Inversión"], fl["Financiamiento"], r["saldo_final"]),
                    key="cascada_directo")
     ui.formula("<b>Flujo por actividad</b> = Σ Entradas − Σ Salidas &nbsp;·&nbsp; <b>Saldo final</b> = Saldo inicial + "
-               "Variación neta <br><span class='note'>Código: <code>gfo/calculos.py → flujo_efectivo_directo()</code></span>")
+               "Variación neta")

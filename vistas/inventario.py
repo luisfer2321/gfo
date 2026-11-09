@@ -46,7 +46,7 @@ with t1:
     ui.formula("<b>Existencia final</b> = Existencia inicial + Entradas − Salidas &nbsp;·&nbsp; "
                "<b>Valor del inventario</b> = Existencia final × Costo unitario &nbsp;·&nbsp; "
                "<b>Alerta</b> si Existencia final ≤ Stock mínimo &nbsp;·&nbsp; <b>Cantidad sugerida</b> = 2 × Stock mínimo − Existencia final"
-               "<br><span class='note'>Código: <code>gfo/calculos.py → control_inventario()</code></span>")
+               "")
     st.write("")
     if len(res):
         g1, g2 = st.columns(2)
