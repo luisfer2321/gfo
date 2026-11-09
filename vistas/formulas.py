@@ -76,10 +76,10 @@ secciones = {
 
 for titulo, filas in secciones.items():
     with st.expander(titulo, expanded=False):
-        st.dataframe(pd.DataFrame(filas, columns=["Concepto", "Fórmula"]), hide_index=True)
+        st.table(pd.DataFrame(filas, columns=["Concepto", "Fórmula"]), hide_index=True)
 
 with st.expander("Razones financieras", expanded=True):
-    st.dataframe(pd.DataFrame([{"Categoría": i["categoria"], "Razón": i["nombre"], "Fórmula": i["formula"],
+    st.table(pd.DataFrame([{"Categoría": i["categoria"], "Razón": i["nombre"], "Fórmula": i["formula"],
                                 "Unidad": i["unidad"]} for i in calc.INFO_RAZON.values()]), hide_index=True)
     st.markdown("**Criterios de evaluación** (referencias académicas generales)")
     criterios = [
@@ -89,5 +89,5 @@ with st.expander("Razones financieras", expanded=True):
         ("Margen bruto", "≥ 25 %", "10 % – 25 %", "< 10 %"), ("Margen operativo", "≥ 10 %", "3 % – 10 %", "< 3 %"),
         ("Margen neto", "≥ 5 %", "0 % – 5 %", "< 0 %"), ("ROA", "≥ 5 %", "2 % – 5 %", "< 2 %"), ("ROE", "≥ 12 %", "5 % – 12 %", "< 5 %"),
     ]
-    st.dataframe(pd.DataFrame(criterios, columns=["Razón", "Favorable", "Aceptable", "Desfavorable"]), hide_index=True)
+    st.table(pd.DataFrame(criterios, columns=["Razón", "Favorable", "Aceptable", "Desfavorable"]), hide_index=True)
     st.caption("Las razones de actividad y de mercado se muestran como informativas: su nivel adecuado depende del giro de la empresa.")
