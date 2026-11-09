@@ -15,4 +15,4 @@ headless = true
 gatherUsageStats = false
 
 [client]
-toolbarMode = "viewer"
+toolbarMode = "minimal"
