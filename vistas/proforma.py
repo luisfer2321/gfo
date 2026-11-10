@@ -97,8 +97,6 @@ with t3:
         st.download_button("Exportar análisis completo (Excel)", datos.generador_reporte(), file_name=datos.nombre_reporte(),
                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                            icon=":material/table_view:", type="primary")
-        st.download_button("Descargar resumen (CSV)", tabla.to_csv(index=False).encode("utf-8-sig"), "reporte_integrado.csv",
-                           "text/csv", icon=":material/download:")
     with der:
         fig = ui.figura("Rentabilidad: real y proyectada", 300)
         for i, (k, n) in enumerate([("margen_neto", "Margen neto"), ("roa", "ROA"), ("roe", "ROE")]):

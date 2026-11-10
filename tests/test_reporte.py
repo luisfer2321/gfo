@@ -40,7 +40,7 @@ def test_valores_coinciden_con_los_calculos(libro):
     assert buscar(libro["Balance General"], "TOTAL ACTIVO")[:2] == (6_000_000, 6_600_000)
     assert buscar(libro["Estado de Resultados"], "Utilidad neta")[1] == pytest.approx(729_400)
     roe = buscar(libro["Razones financieras"], "Rendimiento sobre patrimonio (ROE)")
-    assert roe[2] == pytest.approx(729_400 / 3_450_000)
+    assert roe[1] == pytest.approx(729_400 / 3_450_000)
     assert buscar(libro["Sistema DuPont"], "(=) ROE")[1] == pytest.approx(729_400 / 3_450_000)
     assert buscar(libro["Flujo de efectivo"], "Variación neta del efectivo")[0] == pytest.approx(70_000)
     assert buscar(libro["Análisis horizontal"], "Ventas netas")[3] == pytest.approx(0.15)
@@ -50,3 +50,11 @@ def test_tiene_graficos(libro):
     assert len(libro["Resumen"]._charts) == 1
     assert len(libro["Punto de equilibrio"]._charts) == 1
     assert len(libro["Presupuesto maestro"]._charts) == 2
+
+
+def test_no_incluye_formulas(libro):
+    for ws in libro.worksheets:
+        for fila in ws.iter_rows(values_only=True):
+            for c in fila:
+                if isinstance(c, str):
+                    assert "÷" not in c and "Fórmula" not in c and not c.startswith("="), (ws.title, c)

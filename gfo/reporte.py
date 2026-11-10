@@ -344,8 +344,6 @@ def generar(estados: pd.DataFrame, empresa: dict, P: dict, trimestres: pd.DataFr
         ("Precio de mercado por acción", [cuentas[p]["precio_accion"] for p in periodos], "", CS),
         ("Dividendos pagados", [cuentas[p]["dividendos"] for p in periodos], "", CS),
     ])
-    h.nota("Utilidad bruta = Ventas − Costo de ventas · UAII = Utilidad bruta − Gastos de operación · "
-           "UAI = UAII − Intereses ± Otros ingresos (gastos) · Utilidad neta = UAI − Impuesto")
 
     # ------------------------------------------------------------ Análisis horizontal
     h = Hoja(wb, "Análisis horizontal", nombre, "Análisis horizontal", sub)
@@ -365,7 +363,6 @@ def generar(estados: pd.DataFrame, empresa: dict, P: dict, trimestres: pd.DataFr
                 else:
                     filas.append((n, [b, a, a - b, (calc.dividir(a - b, abs(b)) if b else None, PCT)], e))
             h.tabla([titulo, base, actual, "Variación C$", "Variación %"], filas)
-    h.nota("Variación absoluta = Período actual − Período base · Variación relativa = Variación absoluta ÷ |Período base|")
 
     # ------------------------------------------------------------ Análisis vertical
     h = Hoja(wb, "Análisis vertical", nombre, "Análisis vertical", sub)
@@ -375,19 +372,19 @@ def generar(estados: pd.DataFrame, empresa: dict, P: dict, trimestres: pd.DataFr
     h.seccion("Estado de Resultados (% de las ventas netas)")
     h.tabla(["Cuenta"] + periodos, [(n, [calc.dividir(comp[p][k], comp[p]["ventas"]) for p in periodos], e)
                                     for n, k, e in _lineas_er()], fmt=PCT)
-    h.nota("Balance: Cuenta ÷ Activo total · Estado de Resultados: Cuenta ÷ Ventas netas. N/D = el período no tiene ventas.")
+    h.nota("N/D = el período no tiene ventas.")
 
     # ------------------------------------------------------------ Razones financieras
-    h = Hoja(wb, "Razones financieras", nombre, "Razones financieras", sub, anchos=(34, 40) + (15,) * len(periodos) + (15, 70))
+    h = Hoja(wb, "Razones financieras", nombre, "Razones financieras", sub, anchos=(34,) + (15,) * len(periodos) + (15, 70))
     filas, categoria = [], None
     for k, info in calc.INFO_RAZON.items():
         if info["categoria"] != categoria:
             categoria = info["categoria"]
             filas.append((categoria.upper(), [], "grupo"))
         f = FORMATO_UNIDAD.get(info["unidad"], NUM)
-        filas.append((info["nombre"], [info["formula"]] + [(razones[p][k], f) for p in periodos]
+        filas.append((info["nombre"], [(razones[p][k], f) for p in periodos]
                       + [_evaluacion(k, razones[ultimo][k]), calc.interpretar_razon(k, razones[ultimo][k])], ""))
-    h.tabla(["Razón", "Fórmula"] + periodos + [f"Evaluación {ultimo}", f"Interpretación {ultimo}"], filas)
+    h.tabla(["Razón"] + periodos + [f"Evaluación {ultimo}", f"Interpretación {ultimo}"], filas)
     h.seccion("Criterios de evaluación (referencias académicas generales)")
     h.tabla(["Razón", "Favorable", "Aceptable", "Desfavorable"], [
         ("Razón corriente", ["≥ 1.5", "1.0 – 1.5", "< 1.0"], ""), ("Prueba ácida", ["≥ 1.0", "0.7 – 1.0", "< 0.7"], ""),
@@ -399,18 +396,18 @@ def generar(estados: pd.DataFrame, empresa: dict, P: dict, trimestres: pd.DataFr
         ("ROE", ["≥ 12 %", "5 % – 12 %", "< 5 %"], ""),
     ])
     h.nota("Las razones usan saldos al cierre. N/D = no se puede calcular (división entre cero o dato faltante).")
-    h.ws.freeze_panes = "C6"
+    h.ws.freeze_panes = "B6"
 
     # ------------------------------------------------------------ DuPont
     h = Hoja(wb, "Sistema DuPont", nombre, "Sistema DuPont", sub)
     dp = {p: calc.dupont(cuentas[p]) for p in periodos}
     h.tabla(["Factor"] + periodos, [
-        ("Margen neto (Utilidad neta ÷ Ventas)", [(dp[p]["margen_neto"], PCT) for p in periodos], ""),
-        ("(×) Rotación de activos (Ventas ÷ Activo total)", [(dp[p]["rotacion_activos"], VECES) for p in periodos], ""),
+        ("Margen neto", [(dp[p]["margen_neto"], PCT) for p in periodos], ""),
+        ("(×) Rotación de activos", [(dp[p]["rotacion_activos"], VECES) for p in periodos], ""),
         ("(=) ROA", [(dp[p]["roa"], PCT) for p in periodos], "sub"),
-        ("(×) Multiplicador del capital (Activo ÷ Patrimonio)", [(dp[p]["multiplicador_capital"], VECES) for p in periodos], ""),
+        ("(×) Multiplicador del capital", [(dp[p]["multiplicador_capital"], VECES) for p in periodos], ""),
         ("(=) ROE", [(dp[p]["roe"], PCT) for p in periodos], "total"),
-        ("Comprobación: Utilidad neta ÷ Patrimonio", [(razones[p]["roe"], PCT) for p in periodos], ""),
+        ("Comprobación: ROE directo", [(razones[p]["roe"], PCT) for p in periodos], ""),
     ])
     if anterior and dp[anterior]["roe"] is not None and dp[ultimo]["roe"] is not None:
         cambios = {n: calc.dividir((dp[ultimo][k] or 0) - (dp[anterior][k] or 0), dp[anterior][k]) or 0
@@ -419,7 +416,6 @@ def generar(estados: pd.DataFrame, empresa: dict, P: dict, trimestres: pd.DataFr
         principal = max(cambios, key=lambda n: abs(cambios[n]))
         h.nota(f"El ROE pasó de {dp[anterior]['roe']:.2%} a {dp[ultimo]['roe']:.2%}; el factor que más cambió fue "
                f"{principal} ({cambios[principal]:+.1%}).", color="0B0B0B")
-    h.nota("ROE = Margen neto × Rotación de activos totales × Multiplicador del capital")
 
     # ------------------------------------------------------------ Punto de equilibrio
     h = Hoja(wb, "Punto de equilibrio", nombre, f"Punto de equilibrio y modelo C-V-U · {ultimo}", sub,
@@ -433,23 +429,22 @@ def generar(estados: pd.DataFrame, empresa: dict, P: dict, trimestres: pd.DataFr
         ("Unidades a vender", [cvu["unidades"]], "", NUM),
     ])
     if origen == "Estados financieros":
-        h.nota(f"Del Estado de Resultados {ultimo}: unidades = Ventas ÷ Precio; costo variable unitario = (Costo de ventas + "
-               "Gastos de venta) ÷ Unidades; costos fijos = Gastos de administración + Depreciación.")
+        h.nota(f"Datos tomados del Estado de Resultados {ultimo}.")
         h.espacio()
     h.seccion("Resultados")
-    h.tabla(["Concepto", "Valor", "Fórmula"], [
-        ("Margen de contribución unitario", [(cvu["mcu"], CS), "Precio − Costo variable unitario"], ""),
-        ("Razón de margen de contribución", [(cvu["rmc"], PCT), "MCu ÷ Precio"], ""),
-        ("Punto de equilibrio (unidades)", [(cvu["pe_unidades"], NUM), "Costos fijos ÷ MCu"], "sub"),
-        ("Punto de equilibrio (C$)", [(cvu["pe_monetario"], CS), "Costos fijos ÷ RMC"], "sub"),
-        ("Ventas totales", [(cvu["ventas"], CS), "Unidades × Precio"], ""),
-        ("(−) Costos variables", [(cvu["costos_variables"], CS), "Unidades × CVu"], ""),
-        ("(=) Margen de contribución total", [(cvu["mc_total"], CS), "Ventas − Costos variables"], ""),
-        ("(−) Costos fijos", [(cvu["costos_fijos"], CS), ""], ""),
-        ("(=) Utilidad operativa", [(cvu["utilidad"], CS), "Unidades × MCu − Costos fijos"], "total"),
-        ("Margen de seguridad (unidades)", [(cvu["margen_seguridad_u"], NUM), "Unidades − PE"], ""),
-        ("Margen de seguridad (%)", [(cvu["margen_seguridad_pct"], PCT), "(Unidades − PE) ÷ Unidades"], ""),
-        ("Grado de apalancamiento operativo", [(cvu["gao"], VECES), "MC total ÷ Utilidad operativa"], ""),
+    h.tabla(["Concepto", "Valor"], [
+        ("Margen de contribución unitario", [(cvu["mcu"], CS)], ""),
+        ("Razón de margen de contribución", [(cvu["rmc"], PCT)], ""),
+        ("Punto de equilibrio (unidades)", [(cvu["pe_unidades"], NUM)], "sub"),
+        ("Punto de equilibrio (C$)", [(cvu["pe_monetario"], CS)], "sub"),
+        ("Ventas totales", [(cvu["ventas"], CS)], ""),
+        ("(−) Costos variables", [(cvu["costos_variables"], CS)], ""),
+        ("(=) Margen de contribución total", [(cvu["mc_total"], CS)], ""),
+        ("(−) Costos fijos", [(cvu["costos_fijos"], CS)], ""),
+        ("(=) Utilidad operativa", [(cvu["utilidad"], CS)], "total"),
+        ("Margen de seguridad (unidades)", [(cvu["margen_seguridad_u"], NUM)], ""),
+        ("Margen de seguridad (%)", [(cvu["margen_seguridad_pct"], PCT)], ""),
+        ("Grado de apalancamiento operativo", [(cvu["gao"], VECES)], ""),
     ])
     if cvu["mcu"] > 0:
         esc = calc.escenario_cvu(cvu, P.get("esc_precio", 0) / 100, P.get("esc_cv", 0) / 100,
@@ -476,7 +471,7 @@ def generar(estados: pd.DataFrame, empresa: dict, P: dict, trimestres: pd.DataFr
         h.seccion("Utilidad deseada")
         h.tabla(["Concepto", "Valor"], [
             ("Utilidad operativa deseada", [obj], "", CS),
-            ("Unidades necesarias = (CF + Utilidad deseada) ÷ MCu", [u], "", NUM),
+            ("Unidades necesarias", [u], "", NUM),
             ("Ventas necesarias", [u * cvu["precio"] if u else None], "", CS),
         ])
         # Datos y gráfico de la relación ingresos – costos
@@ -525,9 +520,9 @@ def generar(estados: pd.DataFrame, empresa: dict, P: dict, trimestres: pd.DataFr
             ("(=) Utilidad operativa (UAII)", [ap[p]["uaii"] for p in con_ventas], "sub"),
             ("(−) Gastos por intereses", [ap[p]["intereses"] for p in con_ventas], ""),
             ("(=) Utilidad antes de impuestos", [ap[p]["uai"] for p in con_ventas], "total"),
-            ("GAO = Margen de contribución ÷ UAII", [(ap[p]["gao"], VECES) for p in con_ventas], ""),
-            ("GAF = UAII ÷ (UAII − Intereses − DP ÷ (1 − t))", [(ap[p]["gaf"], VECES) for p in con_ventas], ""),
-            ("GAT = GAO × GAF", [(ap[p]["gat"], VECES) for p in con_ventas], "sub"),
+            ("Grado de apalancamiento operativo (GAO)", [(ap[p]["gao"], VECES) for p in con_ventas], ""),
+            ("Grado de apalancamiento financiero (GAF)", [(ap[p]["gaf"], VECES) for p in con_ventas], ""),
+            ("Grado de apalancamiento total (GAT)", [(ap[p]["gat"], VECES) for p in con_ventas], "sub"),
         ])
         cambio = P.get("ap_cambio_ventas", 10) / 100
         u = con_ventas[-1]
@@ -535,8 +530,8 @@ def generar(estados: pd.DataFrame, empresa: dict, P: dict, trimestres: pd.DataFr
         h.seccion(f"Efecto de una variación de {cambio:+.0%} en las ventas · {u}")
         h.tabla(["Concepto", "Variación"], [
             ("Ventas", [ef["cambio_ventas"]], "", PCT),
-            ("Utilidad operativa (UAII) = GAO × Δ% ventas", [ef["cambio_uaii"]], "", PCT),
-            ("Utilidad por acción (UPA) = GAT × Δ% ventas", [ef["cambio_upa"]], "", PCT),
+            ("Utilidad operativa (UAII)", [ef["cambio_uaii"]], "", PCT),
+            ("Utilidad por acción (UPA)", [ef["cambio_upa"]], "", PCT),
         ])
     else:
         h.nota("Ningún período tiene Estado de Resultados con ventas.")

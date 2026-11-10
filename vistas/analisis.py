@@ -175,8 +175,6 @@ with t_r:
                                "Evaluación": ui.ESTADO_TXT[calc.evaluar_razon(k, r_act[k])]}
                               for k, i in calc.INFO_RAZON.items()])
         st.dataframe(tabla, hide_index=True)
-        st.download_button("Descargar CSV", tabla.to_csv(index=False).encode("utf-8-sig"), "razones_financieras.csv",
-                           "text/csv", icon=":material/download:")
 
 # ---------------------------------------------------------------- DuPont
 with t_d:
