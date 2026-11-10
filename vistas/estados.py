@@ -153,9 +153,8 @@ with tab_reg:
                    icon=":material/check_circle:")
 
 with tab_imp:
-    st.markdown("Si ya tiene el **Balance General** y el **Estado de Resultados** en Excel, súbalos aquí y el sistema "
-                "hará todo el análisis automáticamente. Puede subir un solo archivo con ambos estados (en una o varias "
-                "hojas) o un archivo por estado.")
+    st.markdown("Suba aquí su **Balance General** y su **Estado de Resultados** en Excel. Pueden venir en un mismo "
+                "archivo o en archivos separados; el análisis se actualiza solo.")
     izq, der = st.columns([1.6, 1])
     with izq:
         archivos = st.file_uploader("Archivos de Excel o CSV", type=["xlsx", "xlsm", "csv"], accept_multiple_files=True,

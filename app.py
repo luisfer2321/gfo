@@ -47,20 +47,9 @@ with st.sidebar:
                        icon=":material/download:", type="primary", width="stretch",
                        help="Reporte con los estados financieros y todos los análisis de la empresa "
                             "(no incluye el presupuesto personal ni el inventario).")
-    with st.expander("Guardar o cargar datos", icon=":material/save:"):
-        st.download_button("Exportar datos (JSON)", datos.exportar_json(), file_name="datos_financieros.json",
-                           mime="application/json", icon=":material/download:", width="stretch")
-        archivo = st.file_uploader("Importar datos (JSON)", type=["json"], key=f"imp_{st.session_state.version}")
-        if archivo is not None:
-            try:
-                datos.importar_json(archivo.getvalue().decode("utf-8"))
-                st.toast("Datos importados correctamente.", icon="✅")
-                st.rerun()
-            except Exception as e:  # archivo con formato incorrecto
-                st.error(f"No se pudo importar el archivo: {e}")
-        if st.button("Restaurar datos de ejemplo", icon=":material/restart_alt:", width="stretch"):
-            datos.inicializar(forzar=True)
-            st.rerun()
+    if st.button("Restaurar datos de ejemplo", icon=":material/restart_alt:", width="stretch"):
+        datos.inicializar(forzar=True)
+        st.rerun()
     st.caption("Gestión Financiera Operativa · IS2122")
 
 pagina.run()

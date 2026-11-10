@@ -10,6 +10,9 @@ ui.encabezado("Presupuesto personal",
               "Registre sus ingresos y gastos mensuales por categoría para conocer su saldo disponible y su capacidad "
               "de ahorro. Es una aplicación práctica independiente del presupuesto empresarial; los datos de ejemplo son "
               "ficticios.", "Aplicación práctica complementaria")
+# st.data_editor no permite quitar la descarga en CSV de su barra de herramientas: se oculta el botón.
+st.markdown("<style>[data-testid='stElementToolbarButton']:has(button[aria-label^='Download as CSV'])"
+            "{display:none}</style>", unsafe_allow_html=True)
 
 izq, der = st.columns([1, 1.5])
 with izq:
